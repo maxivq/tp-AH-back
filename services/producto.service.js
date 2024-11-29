@@ -1,49 +1,61 @@
-import Producto from "../models/producto.model.js";
+import { MongoClient, ObjectId } from "mongodb";
 
-const agregarProducto = async (data) => {
-    const producto = new Producto(data);
-    return await producto.save();
-};
+const client = new MongoClient("mongodb+srv://admin:admin@cluster0.rbczq.mongodb.net/mydatabase?retryWrites=true&w=majority");
+const db = client.db("mydatabase");
 
-const eliminarProducto = async (id) => {
-    return await Producto.findByIdAndDelete(id);
-};
+async function getProductos(filtros = {}) {
+  await client.connect();
+  return db.collection("productos").find(filtros).toArray();
+}
 
-const modificarProducto = async (id, data) => {
-    await Producto.findByIdAndUpdate(id, data, { new: true });
-};
+async function getProductoId(id) {
+  if (!ObjectId.isValid(id)) {
+    throw new Error("ID no válido");
+  }
+  await client.connect();
+  return db.collection("productos").findOne({ _id: new ObjectId(id) });
+}
 
-const getProductoId = async (id) => {
-    return await Producto.findById(id);
-};
+async function agregarProducto(producto) {
+  await client.connect();
+  await db.collection("productos").insertOne(producto);
+  return producto;
+}
 
-// Nueva función para filtrar productos
-const filtrarProductos = async (filtros) => {
-    const query = {};
+async function eliminarProducto(id) {
+  if (!ObjectId.isValid(id)) {
+    throw new Error("ID no válido");
+  }
+  await client.connect();
+  await db.collection("productos").deleteOne({ _id: new ObjectId(id) });
+  return id;
+}
 
-    if (filtros.categoria) {
-        query.categoria = filtros.categoria;
-    }
+async function actualizarProducto(id, productoActualizado) {
+  if (!ObjectId.isValid(id)) {
+    throw new Error("ID no válido");
+  }
+  await client.connect();
+  await db.collection("productos").updateOne({ _id: new ObjectId(id) }, { $set: productoActualizado });
+  return productoActualizado;
+}
 
-    if (filtros.precioMin !== undefined && filtros.precioMax !== undefined) {
-        query.precio = { $gte: filtros.precioMin, $lte: filtros.precioMax };
-    } else if (filtros.precioMin !== undefined) {
-        query.precio = { $gte: filtros.precioMin };
-    } else if (filtros.precioMax !== undefined) {
-        query.precio = { $lte: filtros.precioMax };
-    }
+async function getProductosPorCategoria(categoria) {
+  await client.connect();
+  return db.collection("productos").find({ categoria }).toArray();
+}
 
-    if (filtros.nombre) {
-        query.nombre = { $regex: filtros.nombre, $options: "i" }; // Búsqueda insensible a mayúsculas
-    }
+async function getLimitedProductos(limit = 3) {
+  await client.connect();
+  return db.collection("productos").find().limit(limit).toArray();
+}
 
-    return await Producto.find(query);
-};
-
-export default {
-    agregarProducto,
-    eliminarProducto,
-    modificarProducto,
-    getProductoId,
-    filtrarProductos
+export {
+  getProductos,
+  getProductoId,
+  agregarProducto,
+  eliminarProducto,
+  actualizarProducto,
+  getProductosPorCategoria,
+  getLimitedProductos
 };

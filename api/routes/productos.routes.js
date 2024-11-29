@@ -1,15 +1,15 @@
 import { Router } from 'express';
-import { getProductos, getProductoss, getProductoId, agregarProducto, actualizarProducto, eliminarProducto, getProductsByCategory, upload } from '../controllers/productos.controller.js';
-import { verifyToken, isAdmin } from '../../middleware/auth.js';
+import { getProductos, getProductsByCategory, getProductoId, agregarProducto, actualizarProducto, eliminarProducto, getLimitedProductos, upload } from '../controllers/productos.controller.js';
+import { validateToken, isAdmin } from '../../middleware/auth.js';
 
 const router = Router();
 
 router.get('/', getProductos);
-router.get('/limited', getProductoss);
-router.get('/:id', getProductoId);
+router.get('/limited', getLimitedProductos); // Nueva ruta para obtener productos limitados
 router.get('/category/:categoria', getProductsByCategory);
-router.post('/', verifyToken, isAdmin, upload.single('imagen'), agregarProducto);
-router.put('/:id', verifyToken, isAdmin, upload.single('imagen'), actualizarProducto);
-router.delete('/:id', verifyToken, isAdmin, eliminarProducto);
+router.get('/:id', getProductoId);
+router.post('/', validateToken, isAdmin, upload.single('imagen'), agregarProducto);
+router.put('/:id', validateToken, isAdmin, upload.single('imagen'), actualizarProducto);
+router.delete('/:id', validateToken, isAdmin, eliminarProducto);
 
 export default router;

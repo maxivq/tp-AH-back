@@ -1,20 +1,17 @@
-import mongoose from "mongoose";
-import dotenv from "dotenv";
+import { MongoClient } from "mongodb";
 
-// Cargar las variables de entorno desde el archivo .env
-dotenv.config();
+const client = new MongoClient("mongodb+srv://admin:admin@cluster0.rbczq.mongodb.net/mydatabase?retryWrites=true&w=majority");
 
 const connectDB = async () => {
-    try {
-        await mongoose.connect(process.env.MONGODB_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        });
-        console.log("Conectado a MongoDB Atlas");
-    } catch (error) {
-        console.error("Error al conectar a MongoDB Atlas", error);
-        process.exit(1); // Detener la aplicación si no se puede conectar a la base de datos
-    }
+  try {
+    await client.connect();
+    console.log("Conectado a MongoDB Atlas");
+    const db = client.db("mydatabase"); // Nombre de la base de datos
+    return db;
+  } catch (error) {
+    console.error("Error al conectar a MongoDB Atlas", error);
+    process.exit(1);
+  }
 };
 
 export default connectDB;

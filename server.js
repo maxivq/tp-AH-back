@@ -7,10 +7,6 @@ import authRoutes from './api/routes/auth.routes.js';
 import configureMiddleware from './middleware/middleware.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import dotenv from 'dotenv';
-
-// Cargar las variables de entorno desde el archivo .env
-dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

@@ -1,10 +1,6 @@
-import User from '../../models/user.model.js';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
-
-// Cargar las variables de entorno desde el archivo .env
-dotenv.config();
+import User from '../../models/user.model.js';
+import { crearToken } from '../../services/token.service.js';
 
 export const registerUser = async (req, res) => {
   const { name, email, password } = req.body;
@@ -23,7 +19,7 @@ export const registerUser = async (req, res) => {
     const newUser = new User({ name, email, password: hashedPassword });
     await newUser.save();
 
-    const token = jwt.sign({ id: newUser._id, role: newUser.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = await crearToken(newUser);
 
     res.status(201).json({ token });
   } catch (error) {
@@ -49,7 +45,7 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: 'Correo electrónico o contraseña incorrectos' });
     }
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = await crearToken(user);
 
     res.status(200).json({ token, role: user.role });
   } catch (error) {

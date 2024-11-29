@@ -1,34 +1,22 @@
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
+import * as tokenService from "../services/token.service.js";
 
-// Cargar las variables de entorno desde el archivo .env
-dotenv.config();
-
-const secret = process.env.JWT_SECRET;
-
-export const verifyToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) {
-        return res.status(403).json({ message: 'No token provided' });
-    }
-
-    const token = authHeader.split(' ')[1];
-    if (!token) {
-        return res.status(403).json({ message: 'No token provided' });
-    }
-
-    jwt.verify(token, secret, (err, decoded) => {
-        if (err) {
-            return res.status(500).json({ message: 'Failed to authenticate token' });
-        }
-        req.userId = decoded.id;
-        req.userRole = decoded.role;
+export async function validateToken(req, res, next) {
+    try {
+        const authHeader = req.headers["authorization"];
+        if (!authHeader) return res.status(401).json({ message: "Token no encontrado" });
+        const token = authHeader.split(' ')[1];
+        const usuario = await tokenService.validarToken(token);
+        if (!usuario) return res.status(401).json({ message: "Token invalido" });
+        req.usuario = usuario;
         next();
-    });
-};
+    } catch (error) {
+        res.status(401).json({ message: "Token invalido" });
+    }
+}
 
 export const isAdmin = (req, res, next) => {
-    if (req.userRole !== 'admin') {
+    if (req.usuario.role !== 'admin') {
+        console.log('Require Admin Role');
         return res.status(403).json({ message: 'Require Admin Role' });
     }
     next();
