@@ -1,6 +1,10 @@
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
 
-const secret = '12345';
+// Cargar las variables de entorno desde el archivo .env
+dotenv.config();
+
+const secret = process.env.JWT_SECRET;
 
 export const verifyToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
